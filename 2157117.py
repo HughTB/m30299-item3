@@ -102,10 +102,21 @@ def getColour(x, y, colours, gridSize):
 
     return colour
 
+def getValidOptionString(array):
+    optionString = ""
+
+    for i in range(0, len(array) - 2):
+        optionString += str(array[i]) + ", "
+
+    optionString += str(array[-2]) + " and " + str(array[-1])
+
+    return optionString
+
 def getInput():
     gridSize = -1
     colours = []
     validColours = ["red", "green", "blue", "purple", "orange", "cyan"]
+    validSizes = [5, 7]
 
     print("===== up2157117 - Patchwork Coursework =====")
 
@@ -115,16 +126,16 @@ def getInput():
         if inValue.isnumeric():
             inValue = int(inValue) # If input is a valid number, convert to integer
 
-        if inValue == 5 or inValue == 7:
+        if inValue in validSizes:
             gridSize = int(inValue) # Set gridSize to input number, only if it is 5 or 7
         else:
-            print("Invalid patchwork size. Valid sizes are 5 and 7")
+            print("Invalid patchwork size. Valid sizes are {}".format(getValidOptionString(validSizes)))
 
     for i in range(1, 4):
         colour = input(f"Please enter colour {i}: ")
 
         while colour not in validColours:
-            print(f"Not a valid colour. Valid colours are red, green, blue, purple, orange or cyan")
+            print("Not a valid colour. Valid colours are {}".format(getValidOptionString(validColours)))
             colour = input(f"Please enter colour {i}: ")
 
         colours.append(colour) # After checking that the colour is valid, add it to the list of colours to be used
@@ -228,7 +239,7 @@ def challengeFunc(win, gridSize, cells, colours):
             case "Up": # Check if cell in specified direction is empty, if true move the patch, else do nothing
                 moveIndex = x + (y - 1) * gridSize
 
-                if len(cells[moveIndex]) == 0:
+                if moveIndex > 0 and len(cells[moveIndex]) == 0:
                     moveItem(cells[patchIndex], 0, -100, 1)
 
                     cells[moveIndex] = cells[patchIndex]
@@ -236,7 +247,7 @@ def challengeFunc(win, gridSize, cells, colours):
             case "Down":
                 moveIndex = x + (y + 1) * gridSize
 
-                if len(cells[moveIndex]) == 0:
+                if moveIndex < (gridSize ** 2) and len(cells[moveIndex]) == 0:
                     moveItem(cells[patchIndex], 0, 100, 1)
 
                     cells[moveIndex] = cells[patchIndex]
@@ -244,7 +255,7 @@ def challengeFunc(win, gridSize, cells, colours):
             case "Left":
                 moveIndex = (x - 1) + y * gridSize
 
-                if len(cells[moveIndex]) == 0:
+                if moveIndex > (y * gridSize) and len(cells[moveIndex]) == 0:
                     moveItem(cells[patchIndex], -100, 0, 1)
 
                     cells[moveIndex] = cells[patchIndex]
@@ -252,7 +263,7 @@ def challengeFunc(win, gridSize, cells, colours):
             case "Right":
                 moveIndex = (x + 1) + y * gridSize
 
-                if len(cells[moveIndex]) == 0:
+                if moveIndex < ((y + 1) * gridSize) and len(cells[moveIndex]) == 0:
                     moveItem(cells[patchIndex], 100, 0, 1)
 
                     cells[moveIndex] = cells[patchIndex]
