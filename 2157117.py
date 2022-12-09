@@ -1,5 +1,5 @@
 from graphics import *;
-import time;
+import time; # Needed only for the challenge
 
 def drawRect(win, colour, tlPoint, brPoint, outlineThickness = 0):
     """Draw a rectangle using the specified colour between points tlPoint and brPoint"""
@@ -91,6 +91,7 @@ def drawPatchP(win, colour, tlPoint):
     return shapes
 
 def getColour(x, y, colours, gridSize):
+    """Using the coordinates of the patch, determine which colour the patch should be"""
     if x == y or x == gridSize - y - 1: # Set colour to the first colour if on the cross in the pattern
         colour = colours[0]
     elif x > y and x < gridSize - y - 1: # Set colour to the second colour if in the top triangle
@@ -102,17 +103,19 @@ def getColour(x, y, colours, gridSize):
 
     return colour
 
-def getValidOptionString(array):
+def getValidOptionString(optionArray):
+    """Get a string containing the valid options stored in an array"""
     optionString = ""
 
-    for i in range(0, len(array) - 2):
-        optionString += str(array[i]) + ", "
+    for i in range(0, len(optionArray) - 2):
+        optionString += str(optionArray[i]) + ", "
 
-    optionString += str(array[-2]) + " and " + str(array[-1])
+    optionString += str(optionArray[-2]) + " and " + str(optionArray[-1])
 
     return optionString
 
 def getInput():
+    """Get user input for the size of the grid, and the colours which should be used"""
     gridSize = -1
     colours = []
     validColours = ["red", "green", "blue", "purple", "orange", "cyan"]
@@ -123,10 +126,7 @@ def getInput():
     while gridSize == -1:
         inValue = input("Please enter the size of the patchwork: ")
 
-        if inValue.isnumeric():
-            inValue = int(inValue) # If input is a valid number, convert to integer
-
-        if inValue in validSizes:
+        if inValue.isnumeric() and int(inValue) in validSizes:
             gridSize = int(inValue) # Set gridSize to input number, only if it is 5 or 7
         else:
             print("Invalid patchwork size. Valid sizes are {}".format(getValidOptionString(validSizes)))
@@ -134,7 +134,7 @@ def getInput():
     for i in range(1, 4):
         colour = input(f"Please enter colour {i}: ")
 
-        while colour not in validColours:
+        while colour not in validColours: # If colour is invalid, print message containing the valid colours and ask the user to try again
             print("Not a valid colour. Valid colours are {}".format(getValidOptionString(validColours)))
             colour = input(f"Please enter colour {i}: ")
 
@@ -143,6 +143,7 @@ def getInput():
     return gridSize, colours
 
 def drawLine(win, colour, point1, point2, thickness):
+    """Draw line between point1 and point2 with the specified colour and thickness"""
     l = Line(point1, point2)
     l.setOutline(colour)
     l.setWidth(thickness)
@@ -150,7 +151,8 @@ def drawLine(win, colour, point1, point2, thickness):
 
     return l
 
-def drawBorder(win, colour, tlPoint, size, thickness):
+def drawBorder(win, colour, tlPoint, size, thickness = 1):
+    """Draw a border of given thickness (rectangles cannot have a transparent fill colour)"""
     brPoint = Point(tlPoint.getX() + size, tlPoint.getY() + size)
 
     lines = []
@@ -162,7 +164,7 @@ def drawBorder(win, colour, tlPoint, size, thickness):
 
     return lines
 
-# Functions for challenge
+# Functions for challenge (As stated in the documentation, code quality does not matter here)
 def undrawItem(itemArray):
     for i in range(0, len(itemArray)):
         itemArray[i].undraw()
@@ -191,7 +193,7 @@ def moveItem(itemArray, xDist, yDist, animTime):
 
         time.sleep(animTime / 10)
 
-def challengeFunc(win, gridSize, cells, colours):
+def challengeFunc(win, gridSize, patchArray, colours):
     clickPos = win.getMouse()
 
     x = int(clickPos.getX() / 100)
@@ -205,71 +207,61 @@ def challengeFunc(win, gridSize, cells, colours):
     while selected:
         key = win.getKey()
 
-        match key:
-            case "d":
-                undrawItem(cells[patchIndex])
-                cells[patchIndex] = []
-            case "1":
-                if len(cells[patchIndex]) == 0: # If the cell is empty, draw into it, else do nothing
-                    cells[patchIndex] = drawPatchB(win, colours[0], Point(x * 100, y * 100))
-            case "2":
-                if len(cells[patchIndex]) == 0:
-                    cells[patchIndex] = drawPatchB(win, colours[1], Point(x * 100, y * 100))
-            case "3":
-                if len(cells[patchIndex]) == 0:
-                    cells[patchIndex] = drawPatchB(win, colours[2], Point(x * 100, y * 100))
-            case "4":
-                if len(cells[patchIndex]) == 0:
-                    cells[patchIndex] = drawPatchP(win, colours[0], Point(x * 100, y * 100))
-            case "5":
-                if len(cells[patchIndex]) == 0:
-                    cells[patchIndex] = drawPatchP(win, colours[1], Point(x * 100, y * 100))
-            case "6":
-                if len(cells[patchIndex]) == 0:
-                    cells[patchIndex] = drawPatchP(win, colours[2], Point(x * 100, y * 100))
-            case "7":
-                if len(cells[patchIndex]) == 0:
-                    cells[patchIndex] = drawPatchF(win, colours[0], Point(x * 100, y * 100))
-            case "8":
-                if len(cells[patchIndex]) == 0:
-                    cells[patchIndex] = drawPatchF(win, colours[1], Point(x * 100, y * 100))
-            case "9":
-                if len(cells[patchIndex]) == 0:
-                    cells[patchIndex] = drawPatchF(win, colours[2], Point(x * 100, y * 100))
-            case "Up": # Check if cell in specified direction is empty, if true move the patch, else do nothing
-                moveIndex = x + (y - 1) * gridSize
+        if key == "d":
+            undrawItem(patchArray[patchIndex])
+            patchArray[patchIndex] = []
+        elif key == "1" and len(patchArray[patchIndex]) == 0: # If the patch is empty, draw a new patch depending upon the key pressed, else do nothing (Yes there are better ways of doing this, but code quality does not matter here)
+                patchArray[patchIndex] = drawPatchB(win, colours[0], Point(x * 100, y * 100))
+        elif key == "2" and len(patchArray[patchIndex]) == 0:
+                patchArray[patchIndex] = drawPatchB(win, colours[1], Point(x * 100, y * 100))
+        elif key == "3" and len(patchArray[patchIndex]) == 0:
+                patchArray[patchIndex] = drawPatchB(win, colours[2], Point(x * 100, y * 100))
+        elif key == "4" and len(patchArray[patchIndex]) == 0:
+                patchArray[patchIndex] = drawPatchP(win, colours[0], Point(x * 100, y * 100))
+        elif key == "5" and len(patchArray[patchIndex]) == 0:
+                patchArray[patchIndex] = drawPatchP(win, colours[1], Point(x * 100, y * 100))
+        elif key == "6" and len(patchArray[patchIndex]) == 0:
+                patchArray[patchIndex] = drawPatchP(win, colours[2], Point(x * 100, y * 100))
+        elif key == "7" and len(patchArray[patchIndex]) == 0:
+                patchArray[patchIndex] = drawPatchF(win, colours[0], Point(x * 100, y * 100))
+        elif key == "8" and len(patchArray[patchIndex]) == 0:
+                patchArray[patchIndex] = drawPatchF(win, colours[1], Point(x * 100, y * 100))
+        elif key == "9" and len(patchArray[patchIndex]) == 0:
+                patchArray[patchIndex] = drawPatchF(win, colours[2], Point(x * 100, y * 100))
+        elif key == "Up": # Check if patch in specified direction is empty, if true move the patch, else do nothing
+            moveIndex = x + (y - 1) * gridSize
 
-                if moveIndex > 0 and len(cells[moveIndex]) == 0:
-                    moveItem(cells[patchIndex], 0, -100, 1)
+            if moveIndex > 0 and len(patchArray[moveIndex]) == 0:
+                moveItem(patchArray[patchIndex], 0, -100, 1)
 
-                    cells[moveIndex] = cells[patchIndex]
-                    cells[patchIndex] = []
-            case "Down":
-                moveIndex = x + (y + 1) * gridSize
+                patchArray[moveIndex] = patchArray[patchIndex]
+                patchArray[patchIndex] = []
+        elif key == "Down":
+            moveIndex = x + (y + 1) * gridSize
 
-                if moveIndex < (gridSize ** 2) and len(cells[moveIndex]) == 0:
-                    moveItem(cells[patchIndex], 0, 100, 1)
+            if moveIndex < (gridSize ** 2) and len(patchArray[moveIndex]) == 0:
+                moveItem(patchArray[patchIndex], 0, 100, 1)
 
-                    cells[moveIndex] = cells[patchIndex]
-                    cells[patchIndex] = []
-            case "Left":
-                moveIndex = (x - 1) + y * gridSize
+                patchArray[moveIndex] = patchArray[patchIndex]
+                patchArray[patchIndex] = []
+        elif key == "Left":
+            moveIndex = (x - 1) + y * gridSize
 
-                if moveIndex > (y * gridSize) and len(cells[moveIndex]) == 0:
-                    moveItem(cells[patchIndex], -100, 0, 1)
+            if moveIndex > (y * gridSize) and len(patchArray[moveIndex]) == 0:
+                moveItem(patchArray[patchIndex], -100, 0, 1)
 
-                    cells[moveIndex] = cells[patchIndex]
-                    cells[patchIndex] = []
-            case "Right":
-                moveIndex = (x + 1) + y * gridSize
+                patchArray[moveIndex] = patchArray[patchIndex]
+                patchArray[patchIndex] = []
+        elif key == "Right":
+            moveIndex = (x + 1) + y * gridSize
 
-                if moveIndex < ((y + 1) * gridSize) and len(cells[moveIndex]) == 0:
-                    moveItem(cells[patchIndex], 100, 0, 1)
+            if moveIndex < ((y + 1) * gridSize) and len(patchArray[moveIndex]) == 0:
+                moveItem(patchArray[patchIndex], 100, 0, 1)
 
-                    cells[moveIndex] = cells[patchIndex]
-                    cells[patchIndex] = []
-            case "Escape":
-                selected = False
+                patchArray[moveIndex] = patchArray[patchIndex]
+                patchArray[patchIndex] = []
+        elif key == "Escape": # If escape is pressed, de-select the patch and end the loop
+            selected = False
 
         redrawItem(win, outline)
 
@@ -282,7 +274,7 @@ def main():
     win = GraphWin("up2157117 - Patchwork Coursework", 100 * gridSize, 100 * gridSize)
     win.setBackground("white")
 
-    cells = []
+    patchArray = [] # All patches are stored in this array, so that they can be moved, deleted or changed in the challenge
 
     # Draw the initial grid
     for j in range(0, gridSize):
@@ -293,16 +285,16 @@ def main():
 
             if (i == j or i == gridSize - j - 1) and i > 0 and j > 0 and i < gridSize - 1 and j < gridSize - 1:
                 # Draw final pattern patch if on the cross, and not on the outer border of patches
-                cells.append(drawPatchF(win, colour, tlPoint))
+                patchArray.append(drawPatchF(win, colour, tlPoint))
             elif i > 0 and j > 0 and i < gridSize - 1 and j < gridSize - 1:
                 # If within the inner 3x3 or 5x5, draw the penultimate pattern patch
-                cells.append(drawPatchP(win, colour, tlPoint))
+                patchArray.append(drawPatchP(win, colour, tlPoint))
             else:
                 # Everywhere else (the outer ring), draw a blank patch
-                cells.append(drawPatchB(win, colour, tlPoint))
+                patchArray.append(drawPatchB(win, colour, tlPoint))
 
-    # Get user input (Challenge, code quality rapidly deteriorates but it says in the instructions that this does not matter)
+    # Infinite loop for challenge, documentation does not specify how the program should be closed
     while True:
-        challengeFunc(win, gridSize, cells, colours)
+        challengeFunc(win, gridSize, patchArray, colours)
 
 main()
